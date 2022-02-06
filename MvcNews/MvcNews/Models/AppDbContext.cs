@@ -8,7 +8,7 @@ namespace MvcNews.Models
         public AppDbContext(DbContextOptions options) :
             base(options)
         {
-
+             
         }
         
         public DbSet<Category> Categories { get; set; }
