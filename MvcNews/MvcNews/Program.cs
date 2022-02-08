@@ -1,11 +1,12 @@
-using MvcNews.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using MvcNews.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer"));
@@ -29,24 +30,20 @@ builder.Services
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "areas",
-    pattern: "{area:exists}/{controller:Home}/{action:Index}/{id?}");
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",
@@ -56,6 +53,7 @@ CreateDefaultUserAndRoles().Wait();
 
 app.Run();
 
+
 async Task CreateDefaultUserAndRoles()
 {
     using var scope = app.Services.CreateScope();
@@ -63,7 +61,7 @@ async Task CreateDefaultUserAndRoles()
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
     context.Database.Migrate();
-
+    
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
@@ -81,7 +79,7 @@ async Task CreateDefaultUserAndRoles()
     {
         UserName = builder.Configuration.GetValue<string>("App:DefaultUser:UserName"),
         Name = builder.Configuration.GetValue<string>("App:DefaultUser:Name"),
-
+       
     };
 
     var userExists = await userManager.FindByNameAsync(user.UserName);
